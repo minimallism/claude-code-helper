@@ -1,18 +1,1 @@
-# Python
 __pycache__/
-*.py[cod]
-*.pyo
-*.egg-info/
-dist/
-*.egg
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Screenshots (local only)
-screenshots/
