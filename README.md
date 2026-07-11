@@ -16,10 +16,10 @@ Web 端 Claude Code 项目历史清理工具，可视化空间占用，批量清
 
 ## 快速开始
 
-无需安装，直接使用 npx：
+无需安装，直接使用 npx（从 GitHub 拉取运行）：
 
 ```bash
-npx claude-code-history-cleaner
+npx github:minimallism/claude-code-history-cleaner
 ```
 
 或克隆后本地启动：
@@ -75,8 +75,14 @@ npm login
 # 2. 发布
 npm publish --access public
 
-# 3. 发布后用户即可一行启动
+# 3. 发布后用户即可一行启动（npm 方式）
 npx claude-code-history-cleaner
+```
+
+未发布 npm 时，也可直接从 GitHub 启动：
+
+```bash
+npx github:minimallism/claude-code-history-cleaner
 ```
 
 ## 安全说明
