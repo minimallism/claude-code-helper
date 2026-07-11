@@ -25,6 +25,14 @@
   ],
   "author": "minimallism",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minimallism/claude-code-history-cleaner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/minimallism/claude-code-history-cleaner/issues"
+  },
+  "homepage": "https://github.com/minimallism/claude-code-history-cleaner#readme",
   "engines": {
     "node": ">=14.0.0"
   }
