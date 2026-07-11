@@ -15,6 +15,17 @@ PORT = 8765
 active_config: ConfigInfo | None = None
 
 
+def cache_dir_name(project_path: str) -> str:
+    """Claude Code 缓存目录编码：仅 ASCII 字母数字保留，其他字符（含中文/下划线/斜杠）换成 -"""
+    result = []
+    for char in project_path:
+        if 'a' <= char <= 'z' or 'A' <= char <= 'Z' or '0' <= char <= '9':
+            result.append(char)
+        else:
+            result.append('-')
+    return ''.join(result)
+
+
 class ClaudeConfigHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urlparse(self.path)
@@ -60,13 +71,16 @@ class ClaudeConfigHandler(BaseHTTPRequestHandler):
             response = {
                 'path': str(active_config['path']),
                 'config': config,
+                'config_size': active_config['path'].stat().st_size,
                 'project_sizes': {}
             }
 
             # 统计 ~/.claude/projects 下各项目缓存目录的磁盘占用
             sizes = {}
             for project_path in config.get('projects', {}):
-                project_dir = Path.home() / '.claude' / 'projects' / project_path.replace('/', '-')
+                if not project_path:
+                    continue
+                project_dir = Path.home() / '.claude' / 'projects' / cache_dir_name(project_path)
                 if project_dir.is_dir():
                     sizes[project_path] = sum(file.stat().st_size for file in project_dir.rglob('*') if file.is_file())
             response['project_sizes'] = sizes
@@ -90,7 +104,10 @@ class ClaudeConfigHandler(BaseHTTPRequestHandler):
 
     def save_config(self):
         try:
-            content_length = int(self.headers.get('Content-Length', 0))
+            content_length = self.headers.get('Content-Length', '')
+            if not content_length:
+                raise ValueError('Missing Content-Length header')
+            content_length = int(content_length)
             body = self.rfile.read(content_length)
             new_config = json.loads(body.decode('utf-8'))
 
@@ -101,7 +118,9 @@ class ClaudeConfigHandler(BaseHTTPRequestHandler):
                 old = json.loads(path.read_text(encoding='utf-8'))
                 removed = set(old.get('projects', {}).keys()) - set(new_config.get('projects', {}).keys())
                 for r in removed:
-                    p = Path.home() / '.claude' / 'projects' / r.replace('/', '-')
+                    if not r:
+                        continue
+                    p = Path.home() / '.claude' / 'projects' / cache_dir_name(r)
                     if p.is_dir():
                         shutil.rmtree(p)
             except Exception:
@@ -170,7 +189,7 @@ def main():
     except KeyboardInterrupt:
         print("\n\n👋 Shutting down...")
     except OSError as e:
-        if e.errno == 48 or e.errno == 98:  # 48 macOS, 98 Linux EADDRINUSE
+        if e.errno in (48, 98, 10048):  # 48 macOS, 98 Linux, 10048 Windows EADDRINUSE
             print(f"\n❌ Port {PORT} is already in use.")
             print(f"   Try closing any existing instances or use a different port.")
             sys.exit(1)

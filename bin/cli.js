@@ -10,6 +10,7 @@ const serverPath = path.resolve(__dirname, '..', 'server.py');
 function checkPython() {
   return new Promise((resolve) => {
     const test = spawn('python3', ['--version'], { stdio: 'ignore' });
+    test.on('error', () => resolve(false));
     test.on('close', (code) => resolve(code === 0));
   });
 }

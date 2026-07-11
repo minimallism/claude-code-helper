@@ -25,8 +25,8 @@ npx claude-code-history-cleaner
 或克隆后本地启动：
 
 ```bash
-git clone https://github.com/minimallism/claude-code-helper.git
-cd claude-code-helper
+git clone https://github.com/minimallism/claude-code-history-cleaner.git
+cd claude-code-history-cleaner
 python3 server.py
 ```
 

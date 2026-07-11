@@ -340,8 +340,8 @@
         <div id="message-area"></div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('overview')">📊 概览</button>
-            <button class="tab" onclick="switchTab('projects')">📁 项目历史</button>
+            <button class="tab active" onclick="switchTab('overview', event)">📊 概览</button>
+            <button class="tab" onclick="switchTab('projects', event)">📁 项目历史</button>
         </div>
 
         <!-- 概览标签页 -->
@@ -418,6 +418,7 @@
         let sortDirection = 'desc';
         let hasChanges = false;
         let messageTimer = null;
+        let config_size = 0;
 
         loadConfig();
 
@@ -434,6 +435,7 @@
                 document.getElementById('config-path').textContent = data.path;
                 config = data.config;
                 projectSizes = data.project_sizes;
+                config_size = data.config_size || 0;
 
                 processConfig();
                 renderAllTabs();
@@ -468,7 +470,8 @@
 
         // 渲染概览页签：统计项目数量、磁盘占用、配置 JSON 大小、闲置项目数、健康分析
         function renderOverview() {
-            const totalSize = JSON.stringify(config, null, 2).length;
+            // 配置大小：用后端下发的真实文件字节数
+            const totalSize = config_size;
             const projectsCount = projects.length;
             const now = Date.now();
             const DAY_10 = 10 * 24 * 60 * 60 * 1000;
@@ -488,7 +491,7 @@
             let analysis = '';
 
             // 配置过大
-            if (totalSize > 3 * 1024 * 1024) {
+            if (totalSize > 3 * 1000 * 1000) {
                 analysis += '⚠️ 配置过大 (' + formatSize(totalSize) + ')。建议清理旧的项目历史记录。<br><br>';
             }
 
@@ -560,7 +563,7 @@
                             <input type="checkbox" ${project.selected ? 'checked' : ''}>
                         </td>
                         <td style="font-family: 'Monaco', monospace;">
-                            ${project.path}
+                            <span class="path-text"></span>
                         </td>
                         <td style="color: var(--muted);">
                             ${project.lastStartTime ? new Date(project.lastStartTime).toLocaleString() : '-'}
@@ -578,6 +581,7 @@
             // 用 addEventListener 绑定事件，直接通过闭包传路径，不需要任何转义
             tbody.querySelectorAll('tr').forEach((tr, index) => {
                 const path = filtered[index].path;
+                tr.querySelector('.path-text').textContent = path;
                 tr.addEventListener('click', () => toggleProject(path));
                 tr.querySelector('input[type="checkbox"]').addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -605,11 +609,11 @@
         }
 
         // 切换标签页：取消所有 tab/tab-content 的 active，再激活当前选中的
-        function switchTab(tabName) {
+        function switchTab(tabName, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
-            event.target.classList.add('active');
+            event.currentTarget.classList.add('active');
             document.getElementById('tab-' + tabName).classList.add('active');
         }
 
@@ -634,13 +638,13 @@
             renderProjects();
         }
 
-        // 全选：同步"全选"checkbox 为勾选状态，再批量选中所有项目
+        // 全选：同步"全选"checkbox 为勾选状态，再批量选中当前过滤结果中的项目
         function selectAllProjects() {
             document.getElementById('select-all-projects').checked = true;
             toggleAllProjects(true);
         }
 
-        // 取消全选：同步"全选"checkbox 为未勾选，再批量取消所有项目
+        // 取消全选：同步"全选"checkbox 为未勾选，再批量取消当前过滤结果中的项目
         function deselectAllProjects() {
             document.getElementById('select-all-projects').checked = false;
             toggleAllProjects(false);
@@ -648,7 +652,8 @@
 
         // 快速选中体积最大的前 10 个项目（按 size 降序），方便批量清理
         function selectLargestProjects() {
-            deselectAllProjects();
+            projects.forEach(p => p.selected = false);
+            document.getElementById('select-all-projects').checked = false;
             [...getFilteredProjects()].sort((a, b) => b.size - a.size)
                 .slice(0, 10).forEach(p => p.selected = true);
             renderProjects();

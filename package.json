@@ -4,8 +4,7 @@
   "description": "Web 端 Claude Code 项目历史清理工具，可视化空间占用，批量清理闲置项目",
   "main": "bin/cli.js",
   "bin": {
-    "claude-history-cleaner": "bin/cli.js",
-    "clh-cleaner": "bin/cli.js"
+    "claude-code-history-cleaner": "bin/cli.js"
   },
   "files": [
     "bin/",
@@ -24,7 +23,7 @@
     "config",
     "projects"
   ],
-  "author": "",
+  "author": "minimallism",
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
