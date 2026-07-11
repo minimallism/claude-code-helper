@@ -1,24 +1,23 @@
-# Claude Config Editor
+# Claude Code History Cleaner
 
-基于 Web 的 Claude 配置文件编辑器，支持 Claude Code (CLI) 和 Claude Desktop 的 `.claude.json` 配置管理。
+Web 端 Claude Code 项目历史清理工具，可视化空间占用，批量清理闲置项目。
 
 ## 功能
 
-- **概览** — 配置文件大小、项目数量、MCP 服务器数量、累计启动次数，自动诊断健康状态
-- **项目历史** — 浏览、搜索、排序、批量选中/删除对话项目历史记录
-- **MCP 服务器** — 添加/删除 MCP 服务器（Command + Args）
-- **原始 JSON** — 语法高亮查看完整配置，支持复制到剪贴板
-- **保存 & 备份** — 修改后保存回磁盘，自动创建备份，支持手动下载备份
+**概览仪表盘**
+- 项目数量、总磁盘占用、配置大小、闲置项目数（>10 天未活跃）
+- 自动健康分析：配置过大、闲置过多、微型项目过多、项目数过多
+
+**项目历史管理**
+- 浏览、搜索、排序（按路径 / 最近启动 / 大小）
+- 比例条形图直观对比各项目空间占用
+- 批量操作：全选、取消全选、选中最大 10 个、删除选中
+- 保存后同步清理 `~/.claude/projects/` 磁盘目录
 
 ## 快速开始
 
 ```bash
-# 启动服务
 python3 server.py
-
-# 指定配置类型（可选）
-python3 server.py code      # Claude Code (CLI)
-python3 server.py desktop   # Claude Desktop
 ```
 
 浏览器打开 `http://localhost:8765`。
@@ -33,25 +32,30 @@ python3 server.py desktop   # Claude Desktop
 
 | 类型 | 路径 |
 |------|------|
-| Claude Code (CLI) | `~/.claude.json` |
-| macOS Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Windows Desktop | `%APPDATA%/Claude/claude_desktop_config.json` |
-| Linux Desktop | `~/.config/Claude/claude_desktop_config.json` |
+| Claude Code | `~/.claude.json` |
+
+## API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 返回管理界面 |
+| GET | `/api/config` | 获取配置文件内容及项目磁盘占用 |
+| POST | `/api/save` | 保存配置并清理已删除项目的磁盘数据 |
 
 ## 项目结构
 
 ```
 claude-config-editor/
-├── server.py      # Python HTTP 后端
-├── index.html     # 单页前端界面
+├── server.py      # Python HTTP 后端（标准库）
+├── index.html     # 单页前端界面（零依赖）
 └── README.md
 ```
 
 ## 安全说明
 
-- 直接读写本地 Claude 配置文件
-- 保存时自动备份为 `.claude.json.backup`
-- 删除项目历史记录时会同步清理 `~/.claude/projects/` 目录
+- 直接读写本地 Claude 配置文件（`~/.claude.json`）
+- 删除项目历史记录时同步清理 `~/.claude/projects/` 对应目录
+- 仅监听本地 `localhost`，不对外暴露
 
 ## License
 
