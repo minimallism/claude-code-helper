@@ -16,7 +16,17 @@ Web 端 Claude Code 项目历史清理工具，可视化空间占用，批量清
 
 ## 快速开始
 
+无需安装，直接使用 npx：
+
 ```bash
+npx claude-code-history-cleaner
+```
+
+或克隆后本地启动：
+
+```bash
+git clone https://github.com/minimallism/claude-code-helper.git
+cd claude-code-helper
 python3 server.py
 ```
 
@@ -45,10 +55,28 @@ python3 server.py
 ## 项目结构
 
 ```
-claude-config-editor/
+claude-code-history-cleaner/
+├── package.json   # npm 包配置（CLI 入口）
+├── bin/
+│   └── cli.js     # Node.js CLI 启动器
 ├── server.py      # Python HTTP 后端（标准库）
 ├── index.html     # 单页前端界面（零依赖）
 └── README.md
+```
+
+## 发布到 npm
+
+如果你需要自行发布：
+
+```bash
+# 1. 登录 npm（首次）
+npm login
+
+# 2. 发布
+npm publish --access public
+
+# 3. 发布后用户即可一行启动
+npx claude-code-history-cleaner
 ```
 
 ## 安全说明
